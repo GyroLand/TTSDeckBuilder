@@ -1,7 +1,4 @@
-# bundled files
-*/bundled*
-
-# Compiled Lua sources
+#Compiled Lua sources
 luac.out
 
 # luarocks build files
@@ -42,3 +39,9 @@ luac.out
 *.x86_64
 *.hex
 
+docs*
+.tts/bundled*
+.tts/objects/Deck builder.a38838.data.json
+.tts/objects/Global.lua
+.tts/objects/Global.xml
+.vscode/settings.json
