@@ -1,0 +1,329 @@
+<Defaults>
+    <Panel
+        class="Window"
+        active="false"
+        image="background"
+        outline="#000000"
+        width="480" 
+        height="640"
+        showAnimation="FadeIn"
+        hideAnimation="FadeOut">
+    </Panel>
+    <Text
+        class="WindowTitle"
+        color="#202020"
+        alignment="MiddleLeft"
+        fontSize="20"
+        fontStyle="Bold"
+        preferredWidth="440"
+        position="10 0 0">
+    </Text>
+    <Text
+        class="Label"
+        color="#DDDDDD"
+        alignment="MiddleLeft"
+        width="460"
+        preferredWidth="460">
+    </Text>
+    <InputField
+        class="InputLine"
+        width="460">
+    </InputField>
+    <InputField
+        class="InputNumber"
+        minWidth="50"
+        characterValidation="Integer"
+        placeholder="#"
+        >
+    </InputField>
+    <InputField
+        class="InputBox"
+        width="460"
+        height="410"
+        lineType="MultiLineNewline">
+    </InputField>
+    <Button
+        class="Proceed"
+        width="80"
+        height="40"
+        offsetXY="-10 10"
+        rectAlignment="LowerRight">
+    </Button>
+    <Button
+        class="TopRightButton"
+        width="40"
+        height="40"
+        offsetXY="-10 0"
+        rectAlignment="MiddleRight">
+    </Button>
+    <Panel
+        class="TopBar"
+        color="#9f9f9f"
+        width="480"
+        height="10%"
+        pivot="0 1"
+        rectAlignment="UpperLeft">
+    </Panel>
+</Defaults>
+
+<Button
+    id="deckbuilder_button"
+    position=" -150 0"
+    width="100"
+    height="50"
+    onClick="Deck_builder">Deck builder</Button>
+<Panel
+    id="main"
+    class="Window"
+    position="300 0 0">
+        <Panel
+            class="TopBar">
+            <Text
+                class="WindowTitle">Deck builder</Text>
+            <Button
+                id="open_settings"
+                class="TopRightButton"
+                onClick="Open_settings"
+                icon="material_icon_cogwheel">
+            </Button>
+        </Panel>
+        <Text
+            id="description"
+            class="Label"
+            offsetXY="0 225">
+        </Text>
+        <Text
+            class="Label"
+            offsetXY="0 160">Card list</Text>
+        <InputField
+            id="cardlist"
+            class="InputBox"
+            offsetXY="0 -60"
+            onEndEdit="Update_value"
+            placeholder="Enter card list here..."
+            >
+        </InputField>
+        <Button
+            id="submit_button"
+            class="Proceed"
+            onClick = "Validate_deck">Submit</Button>
+</Panel>
+<Panel
+    id="settings"
+    class="Window"
+    position="785 0 0">
+        <Panel
+            class="TopBar">
+            <Text
+                class="WindowTitle">Settings</Text>
+            <Button
+                class="TopRightButton"
+                fontSize="20"
+                onClick="Exit_settings">X</Button>
+        </Panel>
+        <VerticalLayout
+            width="460"
+            height="120"
+            pivot="0 1"
+            position="-230 240 0">
+                <Text
+                    class="Label">Card list csv URL</Text>
+                <InputField
+                    id="csv_url"
+                    class="InputLine"
+                    onEndEdit="Update_value"
+                    placeholder="URL"
+                    >
+                </InputField>
+                <Text
+                    class="Label">Card back URL</Text>
+                <InputField
+                    id="card_back_url"
+                    class="InputLine"
+                    onEndEdit="Update_value"
+                    placeholder="URL"
+                    >
+                </InputField>
+        </VerticalLayout>
+        <Image width="480" height="3" color="#9f9f9f" position="0 100 0"></Image>
+        <VerticalLayout
+            width="460"
+            height="65"
+            pivot="0 1"
+            position="-230 85 0">
+                <Text
+                    class="Label">Validation rule</Text>
+                <HorizontalLayout>
+                    <Dropdown 
+                        id="ValidityRuleSet" 
+                        onValueChanged="Validity_rule_selected(selectedIndex)"
+                        preferredWidth="420">
+                            <Option selected="true">Create new ...</Option>
+                    </Dropdown>
+                    <Button
+                        class="TopRightButton"
+                        fontSize="20"
+                        onClick="Edit_validity_rule"
+                        icon="material_icon_edit">
+                    </Button>
+                </HorizontalLayout>
+        </VerticalLayout>
+        <Button
+            id="submitButton"
+            class="Proceed"
+            onClick="Save_settings">Save</Button>
+</Panel>
+<Panel
+    id="validity_rule"
+    class="Window"
+    position="785 0 0">
+        <Panel
+            class="TopBar">
+            <Text
+                class="WindowTitle">Validity rule</Text>
+            <Button
+                class="TopRightButton"
+                fontSize="20"
+                onClick="Exit_validity_rule">X</Button>
+        </Panel>
+        <VerticalLayout
+        width="460"
+        height="400"
+        pivot="0 1"
+        position="-230 240 0"
+        spacing="2">
+            <Text
+                class="Label">Name</Text>
+            <InputField
+                id="name"
+                class="InputLine"
+                placeholder="Name of validity rule"
+                onEndEdit="Update_value">
+            </InputField>            
+            <HorizontalLayout
+                width="460"
+                height="30"
+                pivot="0 1">
+                    <Text
+                        class="Label">Minimum number of cards in deck:</Text>
+                    <InputField
+                        id="min_cards"
+                        class="InputNumber"
+                        onEndEdit="Update_value">
+                    </InputField>
+            </HorizontalLayout>
+            <HorizontalLayout
+                width="460"
+                height="30"
+                pivot="0 1">
+                    <Text
+                        class="Label">Maximum number of cards in deck:</Text>
+                    <InputField
+                        id="max_cards"
+                        class="InputNumber"
+                        onEndEdit="Update_value">
+                    </InputField>
+            </HorizontalLayout>
+            <HorizontalLayout
+                width="460"
+                height="30"
+                pivot="0 1">
+                    <Text
+                        class="Label">Check uniqueness</Text>
+                    <Toggle
+                        id="check_uniqueness"
+                        onValueChanged="Update_value">
+                    </Toggle>
+            </HorizontalLayout>
+            <HorizontalLayout
+                width="460"
+                height="30"
+                pivot="0 1">
+                    <Text
+                        class="Label">Limit number of same cards:</Text>
+                    <InputField
+                        id="max_individual_cards"
+                        class="InputNumber"
+                        onEndEdit="Update_value">
+                    </InputField>
+            </HorizontalLayout>
+            <Text
+                class="Label">Exclusion list</Text>
+            <InputField
+                id="exclusion_list"
+                class="InputLine"
+                placeholder="List of cards"
+                onEndEdit="Update_value"
+                >
+            </InputField>
+            <Text
+                class="Label">Mandatory cards</Text>
+            <InputField
+                id="mandatory_list"
+                class="InputLine"
+                placeholder="List of cards"
+                onEndEdit="Update_value">
+            </InputField>
+            <Text
+                class="Label">Banned cards</Text>
+            <InputField
+                id="banned_list"
+                class="InputLine"
+                placeholder="List of cards"
+                onEndEdit="Update_value">
+            </InputField>
+    </VerticalLayout>
+    <Button
+        id="deleteButton"
+        class="Proceed"
+        offsetXY = "-92 10"
+        onClick="Delete_validity_rule">Delete</Button>
+    <Button
+        id="submitButton"
+        class="Proceed"
+        onClick="Save_validity_rule">Save</Button>
+</Panel>
+<Panel
+    id="validate_log"
+    class="Window"
+    position="300 0 0">
+        <Panel
+            class="TopBar">
+            <Text
+                id="validate_log_title"
+                class="WindowTitle"></Text>
+            <Button
+                class="TopRightButton"
+                fontSize="20"
+                onClick="Exit_validity_log">X</Button>            
+        </Panel>
+        <Text
+            id="validation_results"
+            pivot="0 1"
+            alignment="UpperLeft"
+            class="Label"
+            offsetXY="-230 -75">
+        </Text>
+        <Button
+            id="cancel_button"
+            class="Proceed"
+            offsetXY = "-92 10"
+            onClick="Exit_validity_log">Cancel</Button>
+        <Button
+            id="create_button"
+            class="Proceed"
+            onClick = "Create_deck">Create</Button>
+</Panel>
+<Panel
+    id="progress_indicator"
+    active="false"
+    position="300 0 0">
+    <ProgressBar
+        id="progressbar"
+        percentage="0"
+        showPercentageText="false"
+        fillColor="Green" 
+        backgroundColor="Gray"></ProgressBar>
+    <Text
+        color="#202020">Processing...</Text>
+</Panel>
