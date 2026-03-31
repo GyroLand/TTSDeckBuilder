@@ -160,6 +160,9 @@ function deckbuilder.open_settings()
     end
     deckbuilder.setattribute("open_settings", "interactable", false)
     deckbuilder.setattribute("submit_button", "interactable", false)
+    if formhandler.get_value("cardlist") ~= nil then
+        deckbuilder.setattribute("cardlist", "text", formhandler.get_value("cardlist"))
+    end
     self.UI.setXmlTable(Xmltable)
     self.UI.show("settings")
 end

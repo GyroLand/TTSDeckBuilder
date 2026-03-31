@@ -60,13 +60,13 @@ function deckvalidator.validate(decklist, validity_rule)
     end
 
     --Uniqueness and limit of copies
-    for _, card in ipairs(unique_cards) do
-        local qty = deckvalidator.count_card(decklist,card)
-        if validity_rule.check_uniqueness and card.unique ~= "" and qty > 1 then
-            table.insert(result, card.title .. " is unique, but has " .. qty .. " copies in the list.")
-        else
-            if not deckvalidator.is_excluded(card,validity_rule.exclusion) then
-                if qty > tonumber(validity_rule.limit) then
+    if type(tonumber(validity_rule.limit)) == "number" or validity_rule.check_uniqueness then
+        for _, card in ipairs(unique_cards) do
+            local qty = deckvalidator.count_card(decklist,card)
+            if validity_rule.check_uniqueness and card.unique ~= "" and qty > 1 then
+                table.insert(result, card.title .. " is unique, but has " .. qty .. " copies in the list.")
+            else
+                if type(tonumber(validity_rule.limit)) == "number" and not deckvalidator.is_excluded(card,validity_rule.exclusion) and qty > tonumber(validity_rule.limit) then
                     table.insert(result, card.title .. " has " .. qty .. " copies in the list, but limit is " .. validity_rule.limit)
                 end
             end
@@ -75,14 +75,16 @@ function deckvalidator.validate(decklist, validity_rule)
 
     --Mandatory cards
     local mandatory_cards = cardlist_helper.parse_csv_line(validity_rule.mandatory)
-    for _, mandatory in ipairs(mandatory_cards) do
-        mandatory = cardlist_helper.trim(mandatory)
-        local qty = deckvalidator.count_card(decklist,{title = mandatory})
-        if qty == 0 then
-            table.insert(result, "Mandatory card " .. mandatory .. " is missing from the list.")
+    if next(mandatory_cards) ~= nil and mandatory_cards[1] ~= "" then
+        for _, mandatory in ipairs(mandatory_cards) do
+            mandatory = cardlist_helper.trim(mandatory)
+            local qty = deckvalidator.count_card(decklist,{title = mandatory})
+            if qty == 0 then
+                table.insert(result, "Mandatory card " .. mandatory .. " is missing from the list.")
+            end
         end
     end
-
+    
     --Banned cards
     local banned_cards = cardlist_helper.parse_csv_line(validity_rule.banned)
     for _, banned in ipairs(banned_cards) do
