@@ -2,6 +2,7 @@ local ValidityRule = require("src.ValidityRule")
 local formhandler = require("src.formhandler")
 local deckvalidator = require("src.deckvalidator")
 local cardlist_helper = require("src.cardlist_helper")
+local deckbuilder_i18n = require("src.deckbuilder_i18n")
 local deckbuilder = {}
 deckbuilder.cardlist_table = {}
 deckbuilder.found_cards = {}
@@ -10,9 +11,6 @@ deckbuilder.not_found_cards = {}
 --TODO Internationalization https://stackoverflow.com/questions/8886615/lua-how-to-do-internationalization
 --TODO Proper error handling and user feedback for errors. Currently the mod just fails silently if something goes wrong with the web request or csv parsing.
 --TODO Documentation for functions and code in general. Also user guide for how to use the mod. Maybe even a tutorial video.
-
-deckbuilder.description =
-[[This is a deck builder. Paste the list of cards in the text box below and press Submit. Each individual cards needs to be in separate line. You can set validation rules in the Settings. ]]
 
 ---Helper function to dump tables into string for printing
 ---@param o table
@@ -30,17 +28,6 @@ function deckbuilder.dump(o)
     end
 end
 
----Wrapper around self.UI.SetAttribute that will also update the stored xml table.
----@param id tts__UIElement_Id
----@param name string
----@param value string | number | boolean
----@return boolean
-function deckbuilder.setattribute(id,name,value)
-    local e = deckbuilder.find_xml_table_element_by_id(Xmltable,id)
-    assert(e)
-    e["attributes"][name] = value
-    return self.UI.setAttribute(id, name, value)
-end
 
 ---Activates/deactivates UI
 ---@param main_active boolean Indicates whether the UI is active (shown) or not
@@ -49,23 +36,26 @@ function deckbuilder.deck_builder(main_active)
     if Xmltable == nil then
         --Globals to store ui xml table structure
         Xmltable, Xml_dropdown, Xml_dropdown_options = deckbuilder.init_dropdown()
-        deckbuilder.setattribute("description", "text", deckbuilder.description)
+        --formhandler.setattribute("description", "text", deckbuilder.description)
     end
-    if Csv_url then deckbuilder.setattribute("csv_url","text",Csv_url) end
-    if Cardback_url then deckbuilder.setattribute("card_back_url","text",Cardback_url) end
-    if Selected_validity_rule then
-        deckbuilder.setattribute("ValidityRuleSet","value",Selected_validity_rule) 
-    else
-        deckbuilder.setattribute("ValidityRuleSet","value",0) --Initializing dropdown
+    assert(Xmltable)
+    --formhandler.set_labels()
+    local csv_url = formhandler.get_value("csv_url")
+    if csv_url ~= nil and csv_url ~= "" then formhandler.setattribute("csv_url","text",csv_url) end
+    local cardback_url = formhandler.get_value("card_back_url")
+    if cardback_url ~= nil and cardback_url ~= "" then formhandler.setattribute("card_back_url","text",cardback_url) end
+    local selected_validity_rule = formhandler.get_value("ValidityRuleSet","value") or "0"
+    if selected_validity_rule then
+        formhandler.setattribute("ValidityRuleSet","value",selected_validity_rule) --Initializing dropdown
     end
     if not main_active then
         self.UI.show("main")
-        deckbuilder.setattribute("main", "active", true)
-        deckbuilder.setattribute("submit_button", "interactable", true)
+        formhandler.setattribute("main", "active", true)
+        formhandler.setattribute("submit_button", "interactable", true)
         --self.UI.show("settings")
     else
         self.UI.hide("main")
-        deckbuilder.setattribute("open_settings", "interactable", true)
+        formhandler.setattribute("open_settings", "interactable", true)
         self.UI.hide("settings")
         self.UI.hide("validity_rule")
     end
@@ -92,9 +82,9 @@ function deckbuilder.validate_deck(player, value, id)
         broadcastToColor(error,player.color,"Red")
         return
     end
-    deckbuilder.setattribute("submit_button", "interactable", false)
-    deckbuilder.setattribute("deckbuilder_button", "interactable", false)
-    deckbuilder.setattribute("progressbar","percentage",0)
+    formhandler.setattribute("submit_button", "interactable", false)
+    formhandler.setattribute("deckbuilder_button", "interactable", false)
+    formhandler.setattribute("progressbar","percentage",0)
     self.UI.show("validate_log")
     self.UI.show("progress_indicator")
     self.UI.hide("main")
@@ -108,7 +98,7 @@ function deckbuilder.validate_deck(player, value, id)
     local wi = Wait.time(function ()
         local percent = tonumber(self.UI.getAttribute("progressbar","percentage"))+10
         percent = percent > 100 and 0 or percent
-        deckbuilder.setattribute("progressbar","percentage",percent)
+        formhandler.setattribute("progressbar","percentage",percent)
     end,0.1,-1)
     WebRequest.get(formhandler.get_value("csv_url"), function (request)
         if request.is_error then
@@ -133,7 +123,7 @@ function deckbuilder.validate_deck(player, value, id)
             local validity_rule = Validity_rules[tostring(formhandler.get_value("ValidityRuleSet","value"))+1]
             local validation_result = deckvalidator.validate(deckbuilder.found_cards,validity_rule)
             local missing_cards = next(deckbuilder.not_found_cards) ~= nil and "These cards were not found in the list:\n\t" .. table.concat(deckbuilder.not_found_cards,"\n\t") or nil
-            deckbuilder.setattribute("validate_log_title","text",validity_rule.name)
+            formhandler.setattribute("validate_log_title","text",validity_rule.name)
             local validaton_log_text = "Everything OK!"
             formhandler.update_value("true","validation_success")
             if missing_cards and next(validation_result) ~= nil then
@@ -146,7 +136,7 @@ function deckbuilder.validate_deck(player, value, id)
                 validaton_log_text = "<b>Validation results:</b>\n\n" .. table.concat(validation_result,"\n")
                 formhandler.update_value("false","validation_success")
             end
-            deckbuilder.setattribute("validation_results","text",validaton_log_text)
+            formhandler.setattribute("validation_results","text",validaton_log_text)
         end
     end)
 end
@@ -158,27 +148,48 @@ function deckbuilder.open_settings()
             deckbuilder.insert_dropdown_option(i, validity_rule.name)
         end
     end
-    deckbuilder.setattribute("open_settings", "interactable", false)
-    deckbuilder.setattribute("submit_button", "interactable", false)
+    formhandler.setattribute("open_settings", "interactable", false)
+    formhandler.setattribute("submit_button", "interactable", false)
     if formhandler.get_value("cardlist") ~= nil then
-        deckbuilder.setattribute("cardlist", "text", formhandler.get_value("cardlist"))
+        formhandler.setattribute("cardlist", "text", formhandler.get_value("cardlist"))
     end
     self.UI.setXmlTable(Xmltable)
     self.UI.show("settings")
 end
 
 function deckbuilder.save_settings()
-    deckbuilder.setattribute("csv_url","text",formhandler.get_value("csv_url"))
-    deckbuilder.setattribute("card_back_url","text",formhandler.get_value("card_back_url"))
+    formhandler.setattribute("csv_url","text",formhandler.get_value("csv_url"))
+    formhandler.setattribute("card_back_url","text",formhandler.get_value("card_back_url"))
     self.UI.hide("settings")
-    deckbuilder.setattribute("open_settings", "interactable", true)
-    deckbuilder.setattribute("submit_button", "interactable", true)
+    formhandler.setattribute("open_settings", "interactable", true)
+    formhandler.setattribute("submit_button", "interactable", true)
 end
 
 function deckbuilder.exit_settings()
     self.UI.hide("settings")
-    deckbuilder.setattribute("open_settings", "interactable", true)
-    deckbuilder.setattribute("submit_button", "interactable", true)
+    formhandler.setattribute("open_settings", "interactable", true)
+    formhandler.setattribute("submit_button", "interactable", true)
+end
+
+function deckbuilder.locale_selected(player, selected_index, id)
+    -- convert string to number
+    local selected_idx = tonumber(selected_index)
+    assert(type(selected_idx) == "number")
+
+    -- set dropdown value to item index
+    formhandler.setattribute(id, "value", selected_idx)
+    formhandler.update_value(selected_index, id)
+    
+    local selected_locale = ""
+    if selected_index == "0" then
+        selected_locale = "en"
+    elseif selected_index == "1" then
+        selected_locale = "hu"
+    end
+    if selected_locale ~= deckbuilder_i18n.currentlocale then
+        deckbuilder_i18n.setlocale(selected_locale)
+        formhandler.set_labels()
+    end
 end
 
 function deckbuilder.edit_validity_rule()
@@ -213,7 +224,7 @@ function deckbuilder.save_validity_rule()
     if Validity_rules[selected_index] == nil then
         deckbuilder.insert_dropdown_option(selected_index, validity_rule.name)
         self.UI.setXmlTable(Xmltable)
-        deckbuilder.setattribute("ValidityRuleSet", "value", selected_index-1)
+        formhandler.setattribute("ValidityRuleSet", "value", selected_index-1)
     end
     Validity_rules[selected_index] = ValidityRule:new(validity_rule)
     self.UI.hide("validity_rule")
@@ -232,30 +243,15 @@ function deckbuilder.delete_validity_rule()
         end
     end
     self.UI.setXmlTable(Xmltable)
-    deckbuilder.setattribute("ValidityRuleSet","value",0) --Initializing dropdown
+    formhandler.setattribute("ValidityRuleSet","value",0) --Initializing dropdown
 
     self.UI.hide("validity_rule")
     self.UI.show("settings")
 end
 
---[[ function deckbuilder.store_csv_url(player, id, value)
-    
-end ]]
-
-function deckbuilder.find_xml_table_element_by_id(xmltable, id)
-    for _, element in ipairs(xmltable) do
-        if element.attributes and element.attributes.id == id then return element end
-        if element.children then
-            local found = deckbuilder.find_xml_table_element_by_id(element.children, id)
-            if found then return found end
-        end
-    end
-    return nil
-end
-
 function deckbuilder.init_dropdown()
     local xmltable = self.UI.getXmlTable()
-    local dropdown = deckbuilder.find_xml_table_element_by_id(xmltable, "ValidityRuleSet")
+    local dropdown = formhandler.find_xml_table_element_by_id(xmltable, "ValidityRuleSet")
     assert(dropdown, "Couldn't find dropdown in xml table!")
     local options = dropdown.children
     return xmltable, dropdown, options
@@ -298,14 +294,14 @@ function deckbuilder.validity_rule_selected(_, selected_index, id)
     assert(type(selected_idx) == "number")
 
     -- set dropdown value to item index
-    deckbuilder.setattribute(id, "value", selected_idx)
+    formhandler.setattribute(id, "value", selected_idx)
     formhandler.update_value(selected_index,"ValidityRuleSet")
 end
 
 function deckbuilder.exit_validity_log()
-    deckbuilder.setattribute("submit_button", "interactable", true)
-    deckbuilder.setattribute("deckbuilder_button", "interactable", true)
-    deckbuilder.setattribute("validation_results","text","")
+    formhandler.setattribute("submit_button", "interactable", true)
+    formhandler.setattribute("deckbuilder_button", "interactable", true)
+    formhandler.setattribute("validation_results","text","")
     self.UI.hide("validate_log")
     self.UI.show("main")
 end
@@ -330,12 +326,12 @@ function deckbuilder.create_deck(player, value, id)
     if formhandler.get_value("validation_success") == "false" then
         player.showConfirmDialog("This deck did not pass the validation. Are you sure you want to create it?", function (player_color)
             self.UI.hide("validate_log")
-            deckbuilder.setattribute("deckbuilder_button", "interactable", true)
+            formhandler.setattribute("deckbuilder_button", "interactable", true)
             deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"))
         end)
     else
         self.UI.hide("validate_log")
-        deckbuilder.setattribute("deckbuilder_button", "interactable", true)
+        formhandler.setattribute("deckbuilder_button", "interactable", true)
         deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"),player)
     end
 end

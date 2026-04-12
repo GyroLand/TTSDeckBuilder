@@ -33,8 +33,7 @@
         class="InputNumber"
         minWidth="50"
         characterValidation="Integer"
-        placeholder="#"
-        >
+        placeholder="#">
     </InputField>
     <InputField
         class="InputBox"
@@ -72,6 +71,9 @@
     width="1%"
     height="1%"
     image="material_icon_stacks"
+    fontStyle="Bold"
+    fontSize="20"
+    textAlignment="LowerCenter"
     onClick="Deck_builder"></Button>
 <Panel
     id="main"
@@ -80,7 +82,8 @@
         <Panel
             class="TopBar">
             <Text
-                class="WindowTitle">Deck builder</Text>
+                id="l_windowtitle"
+                class="WindowTitle">Deckbuilder</Text>
             <Button
                 id="open_settings"
                 class="TopRightButton"
@@ -94,6 +97,7 @@
             offsetXY="0 225">
         </Text>
         <Text
+            id = "l_cardlist"
             class="Label"
             offsetXY="0 160">Card list</Text>
         <InputField
@@ -107,7 +111,7 @@
         <Button
             id="submit_button"
             class="Proceed"
-            onClick = "Validate_deck">Submit</Button>
+            onClick = "Validate_deck"></Button>
 </Panel>
 <Panel
     id="settings"
@@ -116,6 +120,7 @@
         <Panel
             class="TopBar">
             <Text
+                id="l_settings"
                 class="WindowTitle">Settings</Text>
             <Button
                 class="TopRightButton"
@@ -124,10 +129,22 @@
         </Panel>
         <VerticalLayout
             width="460"
-            height="120"
+            height="180"
             pivot="0 1"
             position="-230 240 0">
                 <Text
+                    id="l_locale"
+                    class="Label"></Text>
+                <Dropdown 
+                    id="locale_dropdown"
+                    preferredWidth="480"
+                    preferredHeight="20" 
+                    onValueChanged="Locale_selected(selectedIndex)">
+                        <Option selected="true">English</Option>
+                        <Option>Magyar</Option>
+                </Dropdown>
+                <Text
+                    id="l_cardlistcsvurl"
                     class="Label">Card list csv URL</Text>
                 <InputField
                     id="csv_url"
@@ -137,6 +154,7 @@
                     >
                 </InputField>
                 <Text
+                    id="l_cardbackurl"
                     class="Label">Card back URL</Text>
                 <InputField
                     id="card_back_url"
@@ -146,13 +164,14 @@
                     >
                 </InputField>
         </VerticalLayout>
-        <Image width="480" height="3" color="#9f9f9f" position="0 100 0"></Image>
+        <Image width="480" height="3" color="#9f9f9f" position="0 40 0"></Image>
         <VerticalLayout
             width="460"
             height="65"
             pivot="0 1"
-            position="-230 85 0">
+            position="-230 25 0">
                 <Text
+                    id="l_validationrule"
                     class="Label">Validation rule</Text>
                 <HorizontalLayout>
                     <Dropdown 
@@ -170,9 +189,9 @@
                 </HorizontalLayout>
         </VerticalLayout>
         <Button
-            id="submitButton"
+            id="save_settings_button"
             class="Proceed"
-            onClick="Save_settings">Save</Button>
+            onClick="Save_settings"></Button>
 </Panel>
 <Panel
     id="validity_rule"
@@ -181,6 +200,7 @@
         <Panel
             class="TopBar">
             <Text
+                id="l_validityrule"
                 class="WindowTitle">Validity rule</Text>
             <Button
                 class="TopRightButton"
@@ -194,6 +214,7 @@
         position="-230 240 0"
         spacing="2">
             <Text
+                id="l_name"
                 class="Label">Name</Text>
             <InputField
                 id="name"
@@ -206,6 +227,7 @@
                 height="30"
                 pivot="0 1">
                     <Text
+                        id="l_minimumnumberofcardsindeck"
                         class="Label">Minimum number of cards in deck:</Text>
                     <InputField
                         id="min_cards"
@@ -218,6 +240,7 @@
                 height="30"
                 pivot="0 1">
                     <Text
+                        id="l_maximumnumberofcardsindeck"
                         class="Label">Maximum number of cards in deck:</Text>
                     <InputField
                         id="max_cards"
@@ -230,6 +253,7 @@
                 height="30"
                 pivot="0 1">
                     <Text
+                        id="l_checkuniqueness"
                         class="Label">Check uniqueness</Text>
                     <Toggle
                         id="check_uniqueness"
@@ -241,6 +265,7 @@
                 height="30"
                 pivot="0 1">
                     <Text
+                        id="l_limitnumberofsamecards"
                         class="Label">Limit number of same cards:</Text>
                     <InputField
                         id="max_individual_cards"
@@ -249,6 +274,7 @@
                     </InputField>
             </HorizontalLayout>
             <Text
+                id="l_exclusionlist"
                 class="Label">Exclusion list</Text>
             <InputField
                 id="exclusion_list"
@@ -258,6 +284,7 @@
                 >
             </InputField>
             <Text
+                id="l_mandatorycards"
                 class="Label">Mandatory cards</Text>
             <InputField
                 id="mandatory_list"
@@ -266,6 +293,7 @@
                 onEndEdit="Update_value">
             </InputField>
             <Text
+                id="l_bannedcards"
                 class="Label">Banned cards</Text>
             <InputField
                 id="banned_list"
@@ -278,11 +306,11 @@
         id="deleteButton"
         class="Proceed"
         offsetXY = "-92 10"
-        onClick="Delete_validity_rule">Delete</Button>
+        onClick="Delete_validity_rule"></Button>
     <Button
-        id="submitButton"
+        id="save_validity_rule_button"
         class="Proceed"
-        onClick="Save_validity_rule">Save</Button>
+        onClick="Save_validity_rule"></Button>
 </Panel>
 <Panel
     id="validate_log"
@@ -326,5 +354,6 @@
         fillColor="Green" 
         backgroundColor="Gray"></ProgressBar>
     <Text
+        id="l_processing"
         color="#202020">Processing...</Text>
 </Panel>

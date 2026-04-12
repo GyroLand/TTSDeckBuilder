@@ -2,6 +2,7 @@ local cardlist_helper = require("src.cardlist_helper")
 local deckbuilder = require("src.deckbuilder")
 local ValidityRule = require("src.ValidityRule")
 local formhandler = require("src.formhandler")
+local deckbuilder_i18n = require("src.deckbuilder_i18n")
 local main_window_shown = false
 Validity_rules = {}
 
@@ -19,6 +20,10 @@ end
 
 function Open_settings()
     deckbuilder.open_settings()
+end
+
+function Locale_selected(player, value, id)
+    deckbuilder.locale_selected(player, value, id)
 end
 
 function Exit_settings()
@@ -40,6 +45,7 @@ end
 function Delete_validity_rule()
     deckbuilder.delete_validity_rule()
 end
+
 function Validity_rule_selected(player, value, id)
     deckbuilder.validity_rule_selected(player, value, id)
 end
@@ -58,6 +64,7 @@ end
 
 function onSave()
     local saved_data = {}
+    saved_data["locale"] = deckbuilder_i18n.currentlocale
     local urls = {}
     table.insert(urls,self.UI.getAttribute("csv_url","text"))
     table.insert(urls,self.UI.getAttribute("card_back_url","text"))
@@ -70,16 +77,24 @@ end
 function onLoad(saved_data)
     local saved_data_table = JSON.decode(saved_data) or {}
     if saved_data_table.urls then
-        Csv_url = saved_data_table.urls[1] or ""
-        Cardback_url = saved_data_table.urls[2] or ""
+        formhandler.update_value(saved_data_table.urls[1] or "","csv_url")
+        formhandler.update_value(saved_data_table.urls[2] or "","card_back_url")
     end
     if saved_data_table.validity_rules then
         Validity_rules = saved_data_table.validity_rules or {}
     end
     if saved_data_table.selected_validity_rule then
-        Selected_validity_rule = saved_data_table.selected_validity_rule
+        formhandler.update_value(saved_data_table.selected_validity_rule, "ValidityRuleSet")
     end
-    --Validity_rules[1]=ValidityRule:new({name="Dark Siege",minimum=25,maximum=25})
-    --Validity_rules[2]=ValidityRule:new({name="Contact"})
-    --print("I will create your deck! Eventually...")
+    if saved_data_table.locale then
+        deckbuilder_i18n.setlocale(saved_data_table.locale)
+    end
+    
+    if Xmltable == nil then
+        --Globals to store ui xml table structure
+        Xmltable, Xml_dropdown, Xml_dropdown_options = deckbuilder.init_dropdown()
+    end
+    assert(Xmltable)
+    formhandler.set_labels()
+    formhandler.setattribute("locale_dropdown", "value", deckbuilder_i18n.currentlocale == "en" and "0" or "1")
 end
