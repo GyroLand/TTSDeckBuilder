@@ -1,7 +1,9 @@
 
+local deckbuilder_i18n = require("src.deckbuilder_i18n")
+
 ---@class ValidityRule
 local ValidityRule = {
-    name = "New rule",
+    name = deckbuilder_i18n.translate("default_rule_name"),
     minimum = 40,
     maximum = nil,
     limit = 3,

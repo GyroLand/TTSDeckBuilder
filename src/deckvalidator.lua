@@ -1,4 +1,5 @@
 local cardlist_helper = require("src.cardlist_helper")
+local deckbuilder_i18n = require("src.deckbuilder_i18n")
 local deckvalidator = {}
 
 
@@ -52,11 +53,11 @@ function deckvalidator.validate(decklist, validity_rule)
     local unique_cards = cardlist_helper.get_unique_elements(decklist)
     --minimum size
     if tonumber(validity_rule.minimum) and #decklist < tonumber(validity_rule.minimum) then
-        table.insert(result,"Number of cards (" .. #decklist .. ") less than minimum (" .. validity_rule.minimum .. ").")
+        table.insert(result, deckbuilder_i18n.translate("validation_number_of_cards") .. " (" .. #decklist .. ") " .. deckbuilder_i18n.translate("validation_min_cards").. " (" .. validity_rule.minimum .. ").")
     end
     --maximum size
     if tonumber(validity_rule.maximum) and #decklist > tonumber(validity_rule.maximum) then
-        table.insert(result,"Number of cards (" .. #decklist .. ") more than maximum (" .. validity_rule.maximum .. ").")
+        table.insert(result, deckbuilder_i18n.translate("validation_number_of_cards") .. " (" .. #decklist .. ") " .. deckbuilder_i18n.translate("validation_max_cards") .. " (" .. validity_rule.maximum .. ").")
     end
 
     --Uniqueness and limit of copies
@@ -64,10 +65,10 @@ function deckvalidator.validate(decklist, validity_rule)
         for _, card in ipairs(unique_cards) do
             local qty = deckvalidator.count_card(decklist,card)
             if validity_rule.check_uniqueness and card.unique ~= "" and qty > 1 then
-                table.insert(result, card.title .. " is unique, but has " .. qty .. " copies in the list.")
+                table.insert(result, card.title .. deckbuilder_i18n.translate("validation_unique_is") .. qty .. deckbuilder_i18n.translate("validation_unique_copies"))
             else
                 if type(tonumber(validity_rule.limit)) == "number" and not deckvalidator.is_excluded(card,validity_rule.exclusion) and qty > tonumber(validity_rule.limit) then
-                    table.insert(result, card.title .. " has " .. qty .. " copies in the list, but limit is " .. validity_rule.limit)
+                    table.insert(result, card.title .. deckbuilder_i18n.translate("validation_limit_has") .. qty .. deckbuilder_i18n.translate("validation_limit_copies") .. validity_rule.limit)
                 end
             end
         end
@@ -80,7 +81,7 @@ function deckvalidator.validate(decklist, validity_rule)
             mandatory = cardlist_helper.trim(mandatory)
             local qty = deckvalidator.count_card(decklist,{title = mandatory})
             if qty == 0 then
-                table.insert(result, "Mandatory card " .. mandatory .. " is missing from the list.")
+                table.insert(result, deckbuilder_i18n.translate("validation_mandatory_card") .. mandatory .. deckbuilder_i18n.translate("validation_mandatory_missing"))
             end
         end
     end
@@ -91,7 +92,7 @@ function deckvalidator.validate(decklist, validity_rule)
         banned = cardlist_helper.trim(banned)
         local qty = deckvalidator.count_card(decklist,{title = banned})
         if qty > 0 then
-            table.insert(result, "Banned card " .. banned .. " is present in the list.")
+            table.insert(result, deckbuilder_i18n.translate("validation_banned_card") .. banned .. deckbuilder_i18n.translate("validation_banned_present"))
         end
     end
     return result

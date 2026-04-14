@@ -68,14 +68,14 @@ function deckbuilder.validate_deck(player, value, id)
     --get info from csv_url and turn it into lua table
     local input_cardlist = formhandler.get_value("cardlist","text")
     local input_cardlist_table = {}
-    local success, error = pcall(function () assert(input_cardlist ~= "" and input_cardlist ~= nil, "Card list is empty! Please paste the list of cards in the text box before submitting the deck.") end)
+    local success, error = pcall(function () assert(input_cardlist ~= "" and input_cardlist ~= nil, deckbuilder_i18n.translate("error_cardlist_empty")) end)
     if not success then
         ---@cast error -nil
         error = error:match(":[^:]*:(.*)") or error
         broadcastToColor(error,player.color,"Red")
         return
     end
-    success, error = pcall(function () assert(formhandler.get_value("csv_url") ~= "", "CSV URL is not set! Please set it in settings before submitting the deck.") end)
+    success, error = pcall(function () assert(formhandler.get_value("csv_url") ~= "", deckbuilder_i18n.translate("error_csv_url_not_set")) end)
     if not success then
         ---@cast error -nil
         error = error:match(":[^:]*:(.*)") or error
@@ -122,18 +122,18 @@ function deckbuilder.validate_deck(player, value, id)
             --evaluate found_cards against validity rule that is selected on the form. Gather problems to exception list.
             local validity_rule = Validity_rules[tostring(formhandler.get_value("ValidityRuleSet","value"))+1]
             local validation_result = deckvalidator.validate(deckbuilder.found_cards,validity_rule)
-            local missing_cards = next(deckbuilder.not_found_cards) ~= nil and "These cards were not found in the list:\n\t" .. table.concat(deckbuilder.not_found_cards,"\n\t") or nil
+            local missing_cards = next(deckbuilder.not_found_cards) ~= nil and deckbuilder_i18n.translate("validation_cards_not_found").. "\n\t" .. table.concat(deckbuilder.not_found_cards,"\n\t") or nil
             formhandler.setattribute("validate_log_title","text",validity_rule.name)
-            local validaton_log_text = "Everything OK!"
+            local validaton_log_text = deckbuilder_i18n.translate("validation_everything_ok")
             formhandler.update_value("true","validation_success")
             if missing_cards and next(validation_result) ~= nil then
-                validaton_log_text = "<b>Validation results:</b>\n\n" .. missing_cards .. "\n\n" .. table.concat(validation_result,"\n")
+                validaton_log_text = deckbuilder_i18n.translate("validation_results_label").. "\n\n" .. missing_cards .. "\n\n" .. table.concat(validation_result,"\n")
                 formhandler.update_value("false","validation_success")
             elseif missing_cards then
-                validaton_log_text = "<b>Validation results:</b>\n\n" .. missing_cards
+                validaton_log_text = deckbuilder_i18n.translate("validation_results_label").. "\n\n" .. missing_cards
                 formhandler.update_value("false","validation_success")
             elseif next(validation_result) ~= nil then
-                validaton_log_text = "<b>Validation results:</b>\n\n" .. table.concat(validation_result,"\n")
+                validaton_log_text = deckbuilder_i18n.translate("validation_results_label").. "\n\n" .. table.concat(validation_result,"\n")
                 formhandler.update_value("false","validation_success")
             end
             formhandler.setattribute("validation_results","text",validaton_log_text)
@@ -278,7 +278,7 @@ end
 function deckbuilder.clear_dropdown()
     local last_option = {
         tag = "Option",
-        value = "Create new ...",
+        value = deckbuilder_i18n.translate("dropdown_create_new"),
         attributes = {},
         children = {},
     }
@@ -301,9 +301,37 @@ end
 function deckbuilder.exit_validity_log()
     formhandler.setattribute("submit_button", "interactable", true)
     formhandler.setattribute("deckbuilder_button", "interactable", true)
+    formhandler.set_button_text_color("deckbuilder_button")
     formhandler.setattribute("validation_results","text","")
     self.UI.hide("validate_log")
     self.UI.show("main")
+end
+
+---Shows a custom confirmation dialog with translatable buttons
+---@param message string The message to display
+---@param onYes function Callback when Yes is clicked
+function deckbuilder.show_custom_dialog(message, onYes)
+    formhandler.setattribute("confirm_dialog_message", "text", message)
+    formhandler.setattribute("confirm_dialog_yes", "text", deckbuilder_i18n.translate("button_yes"))
+    formhandler.setattribute("confirm_dialog_no", "text", deckbuilder_i18n.translate("button_no"))
+    
+    -- Store the callback for the Yes button
+    deckbuilder.confirm_dialog_callback = onYes
+    
+    self.UI.show("confirm_dialog")
+end
+
+function deckbuilder.confirm_dialog_yes()
+    self.UI.hide("confirm_dialog")
+    if deckbuilder.confirm_dialog_callback then
+        deckbuilder.confirm_dialog_callback()
+        deckbuilder.confirm_dialog_callback = nil
+    end
+end
+
+function deckbuilder.confirm_dialog_no()
+    self.UI.hide("confirm_dialog")
+    deckbuilder.confirm_dialog_callback = nil
 end
 
 ---Rotates a 2D vector based on Y-axis rotation (Euler angle)
@@ -324,21 +352,26 @@ end
 
 function deckbuilder.create_deck(player, value, id)
     if formhandler.get_value("validation_success") == "false" then
-        player.showConfirmDialog("This deck did not pass the validation. Are you sure you want to create it?", function (player_color)
-            self.UI.hide("validate_log")
-            formhandler.setattribute("deckbuilder_button", "interactable", true)
-            deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"))
-        end)
+        deckbuilder.show_custom_dialog(
+            deckbuilder_i18n.translate("dialog_deck_validation_failed"),
+            function()
+                self.UI.hide("validate_log")
+                formhandler.setattribute("deckbuilder_button", "interactable", true)
+                formhandler.set_button_text_color("deckbuilder_button")
+                deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"),player)
+            end
+        )
     else
         self.UI.hide("validate_log")
         formhandler.setattribute("deckbuilder_button", "interactable", true)
-        deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"),player)
+        formhandler.set_button_text_color("deckbuilder_button")
+        deckbuilder.deck_creation(deckbuilder.found_cards, formhandler.get_value("card_back_url"), player)
     end
 end
 
 
-function deckbuilder.deck_creation(cards_list, card_back_url,player)
-    local success, error = pcall(function () assert(card_back_url ~= "", "Card back URL is not set! Please set it in settings before submitting the deck.") end)
+function deckbuilder.deck_creation(cards_list, card_back_url, player)
+    local success, error = pcall(function () assert(card_back_url ~= "", deckbuilder_i18n.translate("error_cardback_url_not_set")) end)
     if not success then
         ---@cast error -nil
         error = error:match(":[^:]*:(.*)") or error
@@ -348,16 +381,17 @@ function deckbuilder.deck_creation(cards_list, card_back_url,player)
     local pos = self.getPosition()
     local rot = self.getRotation()
 
-    local base_offset = Vector(-1.75, 2, 0)
+    local base_offset = Vector(-2, 2, 0)
     local rotated_offset = deckbuilder.rotate_vector_2d(base_offset, rot.y)
     pos = pos + rotated_offset
     rot = Vector(rot.x + 180, rot.y, rot.z)
     for _, card in ipairs(cards_list) do
+        local sideways = false
         local cardinfo = {}
         cardinfo["CARDINFO"] = {}
         for key, value in pairs(card) do
             if key ~= "FaceURL" then
-               cardinfo["CARDINFO"][key] = value
+                cardinfo["CARDINFO"][key] = value
             end
         end
         spawnObject({
@@ -365,7 +399,7 @@ function deckbuilder.deck_creation(cards_list, card_back_url,player)
             position = pos,
             rotation = rot,
             callback_function = function (obj)
-                obj.setName(card.title)
+                obj.setName(card.display_title)
                 obj.setDescription(card.text)
                 obj.script_state = JSON.encode(cardinfo)
                 obj.setCustomObject({

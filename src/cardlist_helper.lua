@@ -65,6 +65,7 @@ function cardlist_helper.prepare_card_table(csv_string)
         local start_col = 2
 
         local cardname = string.upper(cardlist_helper.trim(row_data[1]))
+        row_table["display_title"] = cardlist_helper.trim(row_data[1])
         for j = start_col, #headers do
             local header = cardlist_helper.trim(headers[j])
             row_table[header] = row_data[j]

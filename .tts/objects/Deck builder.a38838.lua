@@ -62,6 +62,14 @@ function Update_value(player, value, id)
     formhandler.update_value(value, id)
 end
 
+function Confirm_dialog_yes()
+    deckbuilder.confirm_dialog_yes()
+end
+
+function Confirm_dialog_no()
+    deckbuilder.confirm_dialog_no()
+end
+
 function onSave()
     local saved_data = {}
     saved_data["locale"] = deckbuilder_i18n.currentlocale

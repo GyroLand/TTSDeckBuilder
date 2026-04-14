@@ -63,6 +63,23 @@
         pivot="0 1"
         rectAlignment="UpperLeft">
     </Panel>
+    <Panel
+        class="ConfirmDialog"
+        active="false"
+        outline="#000000"
+        color="#9f9f9f"
+        position="300 0 -300"
+        width="400" 
+        height="200"
+        showAnimation="FadeIn"
+        hideAnimation="FadeOut">
+    </Panel>
+    <Button
+        class="ConfirmDialogButton"
+        width="80"
+        height="40"
+        rectAlignment="LowerCenter">
+    </Button>    
 </Defaults>
 
 <Button
@@ -337,11 +354,11 @@
             id="cancel_button"
             class="Proceed"
             offsetXY = "-92 10"
-            onClick="Exit_validity_log">Cancel</Button>
+            onClick="Exit_validity_log"></Button>
         <Button
             id="create_button"
             class="Proceed"
-            onClick = "Create_deck">Create</Button>
+            onClick = "Create_deck"></Button>
 </Panel>
 <Panel
     id="progress_indicator"
@@ -355,5 +372,21 @@
         backgroundColor="Gray"></ProgressBar>
     <Text
         id="l_processing"
-        color="#202020">Processing...</Text>
+        color="#202020"></Text>
+</Panel>
+<Panel class="ConfirmDialog" id="confirm_dialog" >
+    <VerticalLayout width="100%" height="100%" padding="15">
+    <Text color="Black" fontsize="20" id="confirm_dialog_message" alignment="UpperCenter" preferredHeight="120">
+        This is a very long message that should be centered and properly wrapped.
+    </Text>
+    <HorizontalLayout width="90%" preferredHeight="40" offsetXY="0 10" rectAlignment="LowerCenter">       
+    <Button class="ConfirmDialogButton" id="confirm_dialog_yes" onClick="Confirm_dialog_yes">
+
+    </Button>
+    <Text></Text>
+    <Button class="ConfirmDialogButton" id="confirm_dialog_no" offsetXY = "-92 10" onClick="Confirm_dialog_no">
+
+    </Button>
+    </HorizontalLayout>
+    </VerticalLayout>
 </Panel>

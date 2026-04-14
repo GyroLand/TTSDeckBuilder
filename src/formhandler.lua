@@ -44,14 +44,48 @@ function formhandler.get_value(id, attribute)
     return self.UI.getAttribute(id, attr)
 end
 
+function formhandler.set_button_text_color(button_id)
+    local tint = self.getColorTint()
+    local textcolor = Color(1-tint.r,1-tint.g,1-tint.b,tint.a)
+    formhandler.setattribute(button_id,"textColor",'#' .. textcolor:toHex(true))
+end
+
 function formhandler.set_labels()
     local tr = deckbuilder_i18n.translate
-    local labels = deckbuilder_i18n.locales['en']
-    for l, _ in pairs(labels) do
-        if not l:find("_placeholder") then --Placeholders are handled separately, because they use different attribute in XML.
-           formhandler.setattribute(l, "text", tr(l))
-        end
+    
+    -- Whitelist of UI element IDs that have translations
+    local ui_labels = {
+        "description",
+        "l_windowtitle",
+        "l_cardlist",
+        "l_settings",
+        "l_cardlistcsvurl",
+        "l_cardbackurl",
+        "l_validationrule",
+        "l_validityrule",
+        "l_name",
+        "l_minimumnumberofcardsindeck",
+        "l_maximumnumberofcardsindeck",
+        "l_checkuniqueness",
+        "l_limitnumberofsamecards",
+        "l_exclusionlist",
+        "l_mandatorycards",
+        "l_bannedcards",
+        "l_processing",
+        "l_locale",
+        "deckbuilder_button",
+        "submit_button",
+        "deleteButton",
+        "save_settings_button",
+        "save_validity_rule_button",
+        "cancel_button",
+        "create_button",
+    }
+    
+    for _, label_id in ipairs(ui_labels) do
+        formhandler.setattribute(label_id, "text", tr(label_id))
     end
+    
     local placeholders = {
         cardlist = "cardlist_placeholder",
         csv_url = "csv_url_placeholder",
@@ -67,9 +101,7 @@ function formhandler.set_labels()
     for id, text_id in pairs(placeholders) do
        formhandler.setattribute(id,"placeholder",tr(text_id))
     end
-    local tint = self.getColorTint()
-    local textcolor = Color(1-tint.r,1-tint.g,1-tint.b,tint.a)
-    formhandler.setattribute("deckbuilder_button","textColor",'#' .. textcolor:toHex(true))
+    formhandler.set_button_text_color("deckbuilder_button")
 end
 
 return formhandler
