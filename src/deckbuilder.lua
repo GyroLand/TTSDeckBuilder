@@ -3,6 +3,7 @@ local formhandler = require("src.formhandler")
 local deckvalidator = require("src.deckvalidator")
 local cardlist_helper = require("src.cardlist_helper")
 local deckbuilder_i18n = require("src.deckbuilder_i18n")
+local utils            = require("src.utils")
 local deckbuilder = {}
 deckbuilder.cardlist_table = {}
 deckbuilder.found_cards = {}
@@ -11,22 +12,6 @@ deckbuilder.not_found_cards = {}
 --TODO Internationalization https://stackoverflow.com/questions/8886615/lua-how-to-do-internationalization
 --TODO Proper error handling and user feedback for errors. Currently the mod just fails silently if something goes wrong with the web request or csv parsing.
 --TODO Documentation for functions and code in general. Also user guide for how to use the mod. Maybe even a tutorial video.
-
----Helper function to dump tables into string for printing
----@param o table
----@return string
-function deckbuilder.dump(o)
-    if type(o) == 'table' then
-        local s = ''
-        for k, v in pairs(o) do
-            if type(k) ~= 'number' then k = '"' .. k .. '"' end
-            s = s .. '[' .. k .. '] = ' .. deckbuilder.dump(v) .. ', '
-        end
-        return '{ ' .. string.sub(s, 1, -3) .. ' } '
-    else
-        return tostring(o)
-    end
-end
 
 
 ---Activates/deactivates UI
@@ -382,7 +367,7 @@ function deckbuilder.deck_creation(cards_list, card_back_url, player)
     local rot = self.getRotation()
 
     local base_offset = Vector(-2, 2, 0)
-    local rotated_offset = deckbuilder.rotate_vector_2d(base_offset, rot.y)
+    local rotated_offset = utils.rotate_vector_2d(base_offset, rot.y)
     pos = pos + rotated_offset
     rot = Vector(rot.x + 180, rot.y, rot.z)
     for _, card in ipairs(cards_list) do

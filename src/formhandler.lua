@@ -46,7 +46,6 @@ end
 
 function formhandler.set_button_text_color(button_id)
     local tint = self.getColorTint()
-    print(tint)
     local luminance = (0.299 * tint.r + 0.587 * tint.g + 0.114 * tint.b)
     local textcolor = luminance > 0.5 and "Black" or "White"
     formhandler.setattribute(button_id,"textColor",textcolor)

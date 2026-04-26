@@ -99,10 +99,15 @@ function onLoad(saved_data)
     end
     
     if Xmltable == nil then
-        --Globals to store ui xml table structure
-        Xmltable, Xml_dropdown, Xml_dropdown_options = deckbuilder.init_dropdown()
+        Wait.condition(function ()
+            --Globals to store ui xml table structure
+            Xmltable, Xml_dropdown, Xml_dropdown_options = deckbuilder.init_dropdown()
+            assert(Xmltable)
+            formhandler.set_labels()
+            formhandler.setattribute("locale_dropdown", "value", deckbuilder_i18n.currentlocale == "en" and "0" or "1")
+        end,
+        function ()
+            return not self.UI.loading
+        end)
     end
-    assert(Xmltable)
-    formhandler.set_labels()
-    formhandler.setattribute("locale_dropdown", "value", deckbuilder_i18n.currentlocale == "en" and "0" or "1")
 end
